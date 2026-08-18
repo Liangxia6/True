@@ -1,0 +1,91 @@
+schema_version: trueeval.research_rubric.v0.1
+rubric_id: browsecomp-zh.default.v1
+benchmark_id: browsecomp-zh
+gates:
+- metric_id: trueeval.execution_success
+  condition: status == completed
+  on_fail: exclude_as_system_failure
+metrics:
+- metric_id: official.answer_accuracy
+  namespace: official
+  role: score
+  method: upstream_executable
+  adapter: adapters/official_grader.py
+  inputs:
+  - prediction.final_answer
+  - gold.reference_answer
+  - gold.official_grader_payload
+  range:
+  - 0.0
+  - 1.0
+  weight: 1.0
+  missing_policy: error
+- metric_id: trueeval.citation_correctness
+  namespace: trueeval
+  role: diagnostic
+  method: claim_citation_entailment
+  inputs:
+  - prediction.claims
+  - prediction.citations
+  - artifacts.search_results
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+- metric_id: trueeval.citation_completeness
+  namespace: trueeval
+  role: diagnostic
+  method: weighted_claim_coverage
+  inputs:
+  - prediction.claims
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+- metric_id: trueeval.source_quality
+  namespace: trueeval
+  role: diagnostic
+  method: source_quality_rubric
+  inputs:
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+- metric_id: trueeval.temporal_validity
+  namespace: trueeval
+  role: gate
+  applies_when: task.input.as_of != null
+  method: evidence_date_check
+  inputs:
+  - task.input.as_of
+  - prediction.claims
+  - prediction.citations
+  threshold: 1.0
+  missing_policy: fail
+- metric_id: official.ece
+  namespace: official
+  role: diagnostic
+  method: upstream_executable
+  adapter: adapters/official_ece.py
+  inputs:
+  - prediction.confidence
+  - gold.official_grader_payload
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+aggregation:
+  official_primary: official.answer_accuracy
+  trueeval_composite: null
+  leaderboard_metric: official.answer_accuracy
+  system_failures: report_separately
+  confidence_interval:
+    method: bootstrap
+    samples: 10000
+    confidence: 0.95

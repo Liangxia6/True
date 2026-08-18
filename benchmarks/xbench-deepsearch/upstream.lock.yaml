@@ -1,0 +1,32 @@
+schema_version: trueeval.upstream_lock.v0.1
+benchmark_id: xbench-deepsearch
+extracted_at: '2026-08-18T04:10:29Z'
+extraction_version: extractor.deepresearch.v0.1
+upstream:
+  repo_url: https://github.com/xbench-ai/xbench-evals
+  commit_sha: 17c562192cc7e62215bfb98b65e9f8806fb95504
+  license: MIT
+files:
+- path: data/DeepSearch-2505.csv
+  sha256: sha256:10bdb81321e3d919c052c2c9a7095868d8bc9036f719fb25d9223043aa28c118
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/data/DeepSearch-2505.csv
+- path: data/DeepSearch-2510.csv
+  sha256: sha256:a9378e56b05ec8f007b8ecc8f6ac74900abafd558267acd5839d0d05fbc6977a
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/data/DeepSearch-2510.csv
+- path: eval_grader.py
+  sha256: sha256:4dc9aa00358be01397df9f48da5a96ee87c56401973f57cb07f16ea7468ef497
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/eval_grader.py
+- path: xbench_evals.py
+  sha256: sha256:50a66d6e3385e49489e007ee68517cd3b8e7b2aea4c7711ce1ca19092bd06496
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/xbench_evals.py
+- path: LICENSE
+  sha256: sha256:4d6c70cbbe873a36d519096c95d0133e8c65cbb954284dd1537e30ec99a8352b
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/LICENSE
+- path: language_models.py
+  sha256: sha256:5237fdab20f0129e93d5f632ba79738bde7aa86b563e1a5fc35fa29a7dab60e8
+  download_url: https://cdn.jsdelivr.net/gh/xbench-ai/xbench-evals@17c562192cc7e62215bfb98b65e9f8806fb95504/language_models.py
+task_count: 200
+split_counts:
+  '2505': 100
+  '2510': 100
+plaintext_policy: decrypted tasks.jsonl and gold.jsonl are local-only; do not upload

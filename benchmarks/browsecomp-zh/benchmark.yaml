@@ -1,0 +1,43 @@
+schema_version: trueeval.research_benchmark.v0.1
+benchmark_id: browsecomp-zh
+name: BrowseComp-ZH
+benchmark_version: 86abe635e7deef89ec00c68ff1c2588f0e2f2099
+domain: research
+task_family: multi_hop_research
+track: short_fact
+formal_public_leaderboard: false
+notes: '05 standard: do not use the full 289-item static set as the formal public
+  Chinese leaderboard.'
+upstream:
+  repo_url: https://github.com/PALIN2018/BrowseComp-ZH
+  commit_sha: 86abe635e7deef89ec00c68ff1c2588f0e2f2099
+  dataset_path: data/browsecomp-zh-encrypted.xlsx
+  evaluator_path: prompt.py + run.py + run_acc_calibration_error.py
+  license: MIT (GitHub README); Hugging Face card also lists apache-2.0; academic
+    research only
+  homepage: https://arxiv.org/abs/2504.19314
+splits:
+- name: test
+  public_questions: false
+  public_gold: false
+  task_count: 289
+default_execution:
+  mode: submission
+  timeout_seconds: 900
+  max_attempts: 1
+  internet_required: true
+  allowed_tools:
+  - web_search
+  - browser
+  output_contract: research_answer.v0.1
+official_metrics:
+- official.answer_accuracy
+trueeval_metrics:
+- trueeval.citation_correctness
+- trueeval.citation_completeness
+- trueeval.source_quality
+- trueeval.temporal_validity
+observation_only:
+- official.ece
+- trueeval.latency
+- trueeval.cost

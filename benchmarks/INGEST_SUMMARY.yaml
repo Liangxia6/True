@@ -1,0 +1,20 @@
+extracted_at: '2026-08-18T04:10:29Z'
+extraction_version: extractor.deepresearch.v0.1
+benchmarks:
+  browsecomp-zh:
+    commit_sha: 86abe635e7deef89ec00c68ff1c2588f0e2f2099
+    task_count: 289
+    split_counts:
+      test: 289
+  xbench-deepsearch:
+    commit_sha: 17c562192cc7e62215bfb98b65e9f8806fb95504
+    task_count: 200
+    split_counts:
+      '2505': 100
+      '2510': 100
+  deepresearcheval:
+    commit_sha: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+    task_count: 130
+    split_counts:
+      v1: 100
+      v2_2601: 30
