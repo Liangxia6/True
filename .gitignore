@@ -1,6 +1,14 @@
 # Local clone cache
 _upstream/
 
+# TrueEval local runtime and generated artifacts
+.DS_Store
+node_modules/
+artifacts/
+.trueeval/
+playwright-report/
+test-results/
+
 # Decrypted official plaintext. Encrypted sources stay in upstream/; do not publish these.
 benchmarks/browsecomp-zh/tasks.jsonl
 benchmarks/browsecomp-zh/gold.jsonl
