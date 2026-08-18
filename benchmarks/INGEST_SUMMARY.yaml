@@ -18,3 +18,7 @@ benchmarks:
     split_counts:
       v1: 100
       v2_2601: 30
+  cited-not-verified:
+    commit_sha: arxiv-2605.06635
+    task_count: 0
+    notes: Framework from Onweller et al. in trueeval/cited_not_verified/. No official pair gold.
