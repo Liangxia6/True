@@ -1,0 +1,48 @@
+schema_version: trueeval.research_benchmark.v0.1
+benchmark_id: xbench-deepsearch
+name: xbench-DeepSearch
+benchmark_version: 17c562192cc7e62215bfb98b65e9f8806fb95504
+domain: research
+task_family: multi_hop_research
+track: short_fact
+upstream:
+  repo_url: https://github.com/xbench-ai/xbench-evals
+  commit_sha: 17c562192cc7e62215bfb98b65e9f8806fb95504
+  dataset_path: data/DeepSearch-2505.csv + data/DeepSearch-2510.csv
+  evaluator_path: eval_grader.py
+  license: MIT
+  homepage: https://xbench.org/#/agi/aisearch
+splits:
+- name: '2505'
+  public_questions: false
+  public_gold: false
+  task_count: 100
+  mvp: true
+- name: '2510'
+  public_questions: false
+  public_gold: false
+  task_count: 100
+  mvp: false
+  notes: '05 standard: 2510 multimodal / dynamic interaction is out of first-round
+    MVP.'
+default_execution:
+  mode: submission
+  timeout_seconds: 900
+  max_attempts: 1
+  internet_required: true
+  allowed_tools:
+  - web_search
+  - browser
+  output_contract: research_answer.v0.1
+official_metrics:
+- official.answer_accuracy
+trueeval_metrics:
+- trueeval.citation_correctness
+- trueeval.citation_completeness
+- trueeval.source_quality
+- trueeval.temporal_validity
+observation_only:
+- trueeval.latency
+- trueeval.cost
+contamination_policy: Do not upload decrypted plaintext. Official request in xbench-evals
+  README.

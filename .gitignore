@@ -1,0 +1,16 @@
+# Local clone cache
+_upstream/
+
+# Decrypted official plaintext. Encrypted sources stay in upstream/; do not publish these.
+benchmarks/browsecomp-zh/tasks.jsonl
+benchmarks/browsecomp-zh/gold.jsonl
+benchmarks/browsecomp-zh/local/
+benchmarks/xbench-deepsearch/tasks.jsonl
+benchmarks/xbench-deepsearch/gold.jsonl
+benchmarks/xbench-deepsearch/local/
+
+# Local decrypt leftovers
+**/browsecomp-zh-decrypted.xlsx
+**/browsecomp-zh-decrypted.json
+**/*.pyc
+**/__pycache__/

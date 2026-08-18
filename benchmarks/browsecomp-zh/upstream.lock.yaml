@@ -1,0 +1,27 @@
+schema_version: trueeval.upstream_lock.v0.1
+benchmark_id: browsecomp-zh
+extracted_at: '2026-08-18T04:10:29Z'
+extraction_version: extractor.deepresearch.v0.1
+upstream:
+  repo_url: https://github.com/PALIN2018/BrowseComp-ZH
+  commit_sha: 86abe635e7deef89ec00c68ff1c2588f0e2f2099
+  license: MIT (GitHub README); Hugging Face card also lists apache-2.0; academic
+    research only
+files:
+- path: data/browsecomp-zh-encrypted.xlsx
+  sha256: sha256:49963cdc8b4a16f4656bbac89ed5f3495f7b3bec4cf310990f567e7893c6a531
+  download_url: https://ghfast.top/https://raw.githubusercontent.com/PALIN2018/BrowseComp-ZH/86abe635e7deef89ec00c68ff1c2588f0e2f2099/data/browsecomp-zh-encrypted.xlsx
+- path: data/browsecomp-zh-decrypt.py
+  sha256: sha256:8706dfde067228cd0b5b736e7beae2efcfe871e29f58f37a9d5fb684f67a824a
+  download_url: https://cdn.jsdelivr.net/gh/PALIN2018/BrowseComp-ZH@86abe635e7deef89ec00c68ff1c2588f0e2f2099/data/browsecomp-zh-decrypt.py
+- path: prompt.py
+  sha256: sha256:31cf3a4abb6321605c87493395d664c507bdb90592024a47619069e9162e1a8b
+  download_url: https://cdn.jsdelivr.net/gh/PALIN2018/BrowseComp-ZH@86abe635e7deef89ec00c68ff1c2588f0e2f2099/prompt.py
+- path: run_acc_calibration_error.py
+  sha256: sha256:c3488f3d29753e0916f8eb2636eabbe28844260d6d3be5928db8319490371fae
+  download_url: https://cdn.jsdelivr.net/gh/PALIN2018/BrowseComp-ZH@86abe635e7deef89ec00c68ff1c2588f0e2f2099/run_acc_calibration_error.py
+- path: run.py
+  sha256: sha256:b15b0307cd1b2c6f616415820ce4637471e8259117e6db8bd4e27d25b8a25e16
+  download_url: https://cdn.jsdelivr.net/gh/PALIN2018/BrowseComp-ZH@86abe635e7deef89ec00c68ff1c2588f0e2f2099/run.py
+task_count: 289
+plaintext_policy: decrypted tasks.jsonl and gold.jsonl are local-only; do not upload

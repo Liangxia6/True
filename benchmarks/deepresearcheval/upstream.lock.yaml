@@ -1,0 +1,27 @@
+schema_version: trueeval.upstream_lock.v0.1
+benchmark_id: deepresearcheval
+extracted_at: '2026-08-18T04:10:29Z'
+extraction_version: extractor.deepresearch.v0.1
+upstream:
+  repo_url: https://github.com/Infinity-AILab/DeepResearchEval
+  commit_sha: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+  license: Apache-2.0
+files:
+- path: data/input_queries/query.jsonl
+  sha256: sha256:7156a2aa7637e26cd6f853ddefbb44cc7ddc9e0e300ccafde5bde1268c488810
+  download_url: https://cdn.jsdelivr.net/gh/Infinity-AILab/DeepResearchEval@121d4c34050d0e3b0ee441c52c4467cf58ab941e/data/input_queries/query.jsonl
+- path: data/input_queries/query_2601_en.jsonl
+  sha256: sha256:86221fd85e0073c31767c4fa7fdee3e3fb152c2ea97310b3f9d5ac480810c6fa
+  download_url: https://cdn.jsdelivr.net/gh/Infinity-AILab/DeepResearchEval@121d4c34050d0e3b0ee441c52c4467cf58ab941e/data/input_queries/query_2601_en.jsonl
+- path: LICENSE
+  sha256: sha256:c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+  download_url: https://cdn.jsdelivr.net/gh/Infinity-AILab/DeepResearchEval@121d4c34050d0e3b0ee441c52c4467cf58ab941e/LICENSE
+- path: point_quality/example_pointwise_usage.py
+  sha256: sha256:5d7eb713166f33895f9e027f5e5594a6ff6f7d71651896d11c22a2510f47867a
+  download_url: https://cdn.jsdelivr.net/gh/Infinity-AILab/DeepResearchEval@121d4c34050d0e3b0ee441c52c4467cf58ab941e/point_quality/example_pointwise_usage.py
+task_count: 130
+split_counts:
+  v1: 100
+  v2_2601: 30
+gold_policy: No official short gold. Keep official quality/fact graders; do not invent
+  claims.

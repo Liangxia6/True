@@ -1,0 +1,45 @@
+schema_version: trueeval.research_benchmark.v0.1
+benchmark_id: deepresearcheval
+name: DeepResearchEval
+benchmark_version: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+domain: research
+task_family: report_research
+track: long_form
+formal_cn_leaderboard: false
+notes: '05 standard: the official English 100-item set is not the Chinese formal long-form
+  set. Quality and fact scores must stay separate.'
+upstream:
+  repo_url: https://github.com/Infinity-AILab/DeepResearchEval
+  commit_sha: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+  dataset_path: data/input_queries/query.jsonl
+  evaluator_path: point_quality/ + factual_eval/
+  license: Apache-2.0
+  homepage: https://infinity-ailab.github.io/deep_research_eval/
+splits:
+- name: v1
+  public_questions: true
+  public_gold: false
+  task_count: 100
+  notes: Paper 100-task English set.
+- name: v2_2601
+  public_questions: true
+  public_gold: false
+  task_count: 30
+  notes: 2026-02-11 v2 queries; dynamic; require as_of.
+default_execution:
+  mode: submission
+  timeout_seconds: 1800
+  max_attempts: 1
+  internet_required: true
+  allowed_tools:
+  - web_search
+  - browser
+  output_contract: research_answer.v0.1
+official_metrics:
+- official.quality_score
+- official.fact_ratio
+trueeval_metrics:
+- trueeval.citation_correctness
+- trueeval.citation_completeness
+- trueeval.source_quality
+- trueeval.temporal_validity
