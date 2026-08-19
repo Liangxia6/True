@@ -1,0 +1,30 @@
+schema_version: trueeval.run_manifest.v0.1
+run_id: null
+name: doubao-browsecomp-zh-smoke
+benchmark:
+  id: browsecomp-zh
+  version: 180c72bc9798f479395d398835f292bb009b4d89
+  root: benchmarks/browsecomp-zh
+  split: test
+  task_selector:
+    ids:
+      - browsecomp-zh.test.000001
+      - browsecomp-zh.test.000002
+      - browsecomp-zh.test.000003
+      - browsecomp-zh.test.000004
+      - browsecomp-zh.test.000005
+    limit: null
+    seed: 20260819
+sut:
+  id: doubao.web.deep-research
+  adapter: doubao_web
+  options: { profile_dir: .trueeval/profiles/doubao, browser_channel: chrome, login_timeout_seconds: 300, poll_interval_ms: 5000, stable_polls: 3, allow_anonymous: false }
+execution: { worker: browser, concurrency: 1, max_attempts: 1, headless: false, keep_worker_open: true, new_session_per_task: true, timeout_seconds: 900 }
+evaluation:
+  run_official: true
+  overlays: [citation_reliability]
+  grader_versions_locked: true
+  judge_profile: configs/judges/openai-compatible.example.yaml
+  official_grader_command: null
+artifacts: { root: artifacts/runs, retain_raw_html: true, retain_screenshots: true }
+state: { database: .trueeval/state.db }

@@ -1,0 +1,9 @@
+schema_version: trueeval.external_grader.v0.1
+benchmark_id: deepresearcheval
+upstream_repo: https://github.com/Infinity-AILab/DeepResearchEval
+upstream_commit: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+# The command must implement trueeval.deepresearch_official_request.v0.1 on stdin
+# and trueeval.deepresearch_official_verdict.v0.1 on stdout. It should call the
+# pinned upstream point_quality and factual_eval modules in their own venv.
+command:
+  - /absolute/path/to/official-grader-bridge

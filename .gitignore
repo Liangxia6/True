@@ -8,6 +8,8 @@ artifacts/
 .trueeval/
 playwright-report/
 test-results/
+__pycache__/
+*.py[cod]
 
 # Decrypted official plaintext. Encrypted sources stay in upstream/; do not publish these.
 benchmarks/browsecomp-zh/tasks.jsonl

@@ -6,14 +6,18 @@
   "description": "TrueEval Research MVP browser runner, starting with Doubao web research.",
   "scripts": {
     "doubao": "tsx src/cli/doubao.ts",
+    "trueeval": "tsx src/cli/trueeval.ts",
+    "schemas:export": "tsx src/schemas/export.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/**/*.test.ts"
+    "test": "node --import tsx --test tests/unit/**/*.test.ts tests/contract/**/*.test.ts tests/integration/**/*.test.ts"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.5"
   },
   "dependencies": {
-    "playwright": "1.55.0"
+    "playwright": "1.62.1",
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "24.3.0",

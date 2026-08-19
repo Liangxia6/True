@@ -39,10 +39,17 @@ export class DoubaoWebAdapter {
 
   async open(): Promise<void> {
     await this.event("PAGE_OPENING", { url: ENTRY_URL });
-    await this.page.goto(ENTRY_URL, {
-      waitUntil: "domcontentloaded",
-      timeout: 60_000,
-    });
+    try {
+      await this.page.goto(ENTRY_URL, {
+        waitUntil: "commit",
+        timeout: 60_000,
+      });
+    } catch (error) {
+      this.assertAllowedHost();
+      const textboxVisible = await this.page.getByRole("textbox").isVisible().catch(() => false);
+      if (!textboxVisible) throw error;
+      await this.event("PAGE_NAVIGATION_TIMEOUT_RECOVERED", { url: this.page.url() });
+    }
     this.assertAllowedHost();
     await this.page.waitForLoadState("domcontentloaded");
     await this.waitForTextbox(60_000);
@@ -175,6 +182,42 @@ export class DoubaoWebAdapter {
     });
   }
 
+  async findExistingConversation(): Promise<boolean> {
+    await this.page.getByText("最近", { exact: true }).waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
+    await this.page.waitForTimeout(1_000);
+    const titles: string[] = [];
+    for (const candidate of await this.page.locator("span").all()) {
+      if (!(await candidate.isVisible())) continue;
+      if ((await candidate.locator("span").count()) > 0) continue;
+      const box = await candidate.boundingBox();
+      if (!box || box.x < 20 || box.x > 320 || box.y < 300 || box.width < 40) continue;
+      const title = normalizeText((await candidate.textContent()) ?? "");
+      if (title.length >= 4 && title.length <= 100 && !titles.includes(title)) titles.push(title);
+    }
+    await this.event("EXISTING_CONVERSATION_SCAN", { titles });
+    for (const title of titles) {
+      const candidate = this.page.locator('a[id^="conversation_"]').filter({ hasText: title });
+      const candidateCount = await candidate.count();
+      if (candidateCount !== 1 || !(await candidate.isVisible())) {
+        await this.event("EXISTING_CONVERSATION_CANDIDATE_SKIPPED", { title, candidate_count: candidateCount });
+        continue;
+      }
+      await candidate.click();
+      await this.page.waitForTimeout(1_200);
+      const matched = await this.promptInMessageArea();
+      await this.event("EXISTING_CONVERSATION_CANDIDATE_CHECKED", { title, matched, url: this.page.url() });
+      if (matched) {
+        await this.event("EXISTING_CONVERSATION_RECOVERED", {
+          title,
+          url: this.page.url(),
+        });
+        return true;
+      }
+    }
+    await this.event("EXISTING_CONVERSATION_NOT_FOUND");
+    return false;
+  }
+
   async waitForCompletion(): Promise<CollectedOutput> {
     const deadline = Date.now() + this.options.timeoutSeconds * 1000;
     let lastAnswer = "";
@@ -191,7 +234,7 @@ export class DoubaoWebAdapter {
       const mainText = await this.readMainText();
       const promptStillVisible = await this.promptInMessageArea();
       missingPromptPolls = promptStillVisible ? 0 : missingPromptPolls + 1;
-      if (missingPromptPolls >= 2) {
+      if (missingPromptPolls >= 2 && !this.isConversationUrl()) {
         if (await this.loginButtonVisible()) {
           throw new DoubaoAutomationError(
             "LOGIN_REQUIRED",
@@ -450,7 +493,7 @@ export class DoubaoWebAdapter {
         }),
       );
       const promptInMessageArea = await this.promptInMessageArea();
-      if (!textboxValue && promptInMessageArea) return true;
+      if (!textboxValue && (promptInMessageArea || this.isConversationUrl())) return true;
       await this.page.waitForTimeout(500);
     }
     return false;
@@ -460,16 +503,17 @@ export class DoubaoWebAdapter {
     const expected = normalizeText(this.options.prompt);
     return this.page.evaluate((prompt) => {
       const root = document.querySelector("main") ?? document.body;
-      const clone = root.cloneNode(true) as HTMLElement;
-      for (const input of clone.querySelectorAll(
-        '[role="textbox"], textarea, input, [contenteditable="true"]',
-      )) {
-        input.remove();
-      }
-      return (clone.textContent ?? "").replace(/\s+/g, " ").includes(
-        prompt.replace(/\s+/g, " "),
-      );
+      const pageText = (root.textContent ?? "")
+        .normalize("NFKC")
+        .replace(/[\s\u200B-\u200D\uFEFF]/g, "");
+      const promptText = prompt.normalize("NFKC").replace(/[\s\u200B-\u200D\uFEFF]/g, "");
+      return pageText.includes(promptText);
     }, expected);
+  }
+
+  private isConversationUrl(): boolean {
+    const url = new URL(this.page.url());
+    return /^\/chat\/(?:local_)?[^/]+/.test(url.pathname);
   }
 
   private async readMainText(): Promise<string> {
@@ -575,17 +619,56 @@ export class DoubaoWebAdapter {
     );
     const seen = new Set<string>();
     const citations: Citation[] = [];
-    for (const link of links) {
-      if (!link.href.startsWith("http")) continue;
-      const hostname = new URL(link.href).hostname;
-      if (ALLOWED_HOSTS.has(hostname) || seen.has(link.href)) continue;
-      seen.add(link.href);
+    const addCitation = (url: string, title: string | null): void => {
+      if (!url.startsWith("http")) return;
+      const hostname = new URL(url).hostname;
+      if (ALLOWED_HOSTS.has(hostname) || seen.has(url)) return;
+      seen.add(url);
       citations.push({
         citation_id: `src${citations.length + 1}`,
-        url: link.href,
-        title: link.title || null,
+        url,
+        title,
         retrieved_at: new Date().toISOString(),
       });
+    };
+    for (const link of links) {
+      addCitation(link.href, link.title || null);
+    }
+
+    // 豆包把答案中的来源渲染成可点击 span，而不是 a[href]。点击后会在新页签
+    // 打开原始来源；仅扫描普通链接会误判为“产品没有引用”。容器类名后缀会随
+    // 构建变化，因此同时用单一 container-* 类和 cursor:pointer 约束候选项。
+    const markerLocator = this.page.locator('main span[class^="container-"]');
+    const markers = await markerLocator.evaluateAll((elements) =>
+      elements
+        .map((element, index) => ({
+          index,
+          title: (element.textContent ?? "").trim(),
+          className: element.className,
+          cursor: getComputedStyle(element).cursor,
+        }))
+        .filter(
+          (item) =>
+            typeof item.className === "string" &&
+            !item.className.includes(" ") &&
+            item.cursor === "pointer" &&
+            item.title.length >= 2 &&
+            item.title.length <= 200,
+        )
+        .slice(0, 100),
+    );
+    for (const marker of markers) {
+      const popupPromise = this.page.waitForEvent("popup", { timeout: 5_000 }).catch(() => null);
+      try {
+        await markerLocator.nth(marker.index).click({ timeout: 5_000 });
+        const popup = await popupPromise;
+        if (!popup) continue;
+        await popup.waitForLoadState("domcontentloaded", { timeout: 10_000 }).catch(() => undefined);
+        addCitation(popup.url(), marker.title || null);
+        await popup.close().catch(() => undefined);
+      } catch {
+        await popupPromise.then((popup) => popup?.close()).catch(() => undefined);
+      }
     }
     return citations;
   }

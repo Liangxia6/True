@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.judge_profile.v0.1"
+    },
+    "judge_profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "openai_compatible",
+        "process"
+      ]
+    },
+    "base_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "api_key_env": {
+      "type": "string",
+      "minLength": 1
+    },
+    "command": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "temperature": {
+      "default": 0,
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "seed": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_output_tokens": {
+      "default": 2048,
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "timeout_seconds": {
+      "default": 120,
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "max_retries": {
+      "default": 2,
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5
+    }
+  },
+  "required": [
+    "schema_version",
+    "judge_profile_id",
+    "transport",
+    "model",
+    "temperature",
+    "seed",
+    "max_output_tokens",
+    "timeout_seconds",
+    "max_retries"
+  ],
+  "additionalProperties": false
+}

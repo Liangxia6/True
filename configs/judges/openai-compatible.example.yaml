@@ -1,0 +1,11 @@
+schema_version: trueeval.judge_profile.v0.1
+judge_profile_id: primary-short-fact-v1
+transport: openai_compatible
+base_url: https://api.example.com/v1
+api_key_env: TRUEEVAL_JUDGE_API_KEY
+model: REPLACE_WITH_JUDGE_MODEL
+temperature: 0
+seed: 20260819
+max_output_tokens: 2048
+timeout_seconds: 120
+max_retries: 2

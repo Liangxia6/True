@@ -1,0 +1,47 @@
+schema_version: trueeval.run_manifest.v0.1
+run_id: null
+name: doubao-xbench-2505-smoke
+benchmark:
+  id: xbench-deepsearch
+  version: 17c562192cc7e62215bfb98b65e9f8806fb95504
+  root: benchmarks/xbench-deepsearch
+  split: "2505"
+  task_selector:
+    ids:
+      - xbench-deepsearch.2505.000001
+      - xbench-deepsearch.2505.000002
+      - xbench-deepsearch.2505.000003
+      - xbench-deepsearch.2505.000004
+      - xbench-deepsearch.2505.000005
+    limit: null
+    seed: 20260819
+sut:
+  id: doubao.web.deep-research
+  adapter: doubao_web
+  options:
+    profile_dir: .trueeval/profiles/doubao
+    browser_channel: chrome
+    login_timeout_seconds: 300
+    poll_interval_ms: 5000
+    stable_polls: 3
+    allow_anonymous: false
+execution:
+  worker: browser
+  concurrency: 1
+  max_attempts: 1
+  headless: false
+  keep_worker_open: true
+  new_session_per_task: true
+  timeout_seconds: 900
+evaluation:
+  run_official: true
+  overlays: [citation_reliability]
+  grader_versions_locked: true
+  judge_profile: configs/judges/openai-compatible.example.yaml
+  official_grader_command: null
+artifacts:
+  root: artifacts/runs
+  retain_raw_html: true
+  retain_screenshots: true
+state:
+  database: .trueeval/state.db

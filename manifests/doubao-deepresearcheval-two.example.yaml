@@ -1,0 +1,26 @@
+schema_version: trueeval.run_manifest.v0.1
+run_id: null
+name: doubao-deepresearcheval-two
+benchmark:
+  id: deepresearcheval
+  version: 121d4c34050d0e3b0ee441c52c4467cf58ab941e
+  root: benchmarks/deepresearcheval
+  split: v1
+  task_selector:
+    ids: [deepresearcheval.v1.000001, deepresearcheval.v1.000002]
+    limit: null
+    seed: 20260819
+sut:
+  id: doubao.web.deep-research
+  adapter: doubao_web
+  options: { profile_dir: .trueeval/profiles/doubao, browser_channel: chrome, login_timeout_seconds: 300, poll_interval_ms: 5000, stable_polls: 3, allow_anonymous: false }
+execution: { worker: browser, concurrency: 1, max_attempts: 1, headless: false, keep_worker_open: true, new_session_per_task: true, timeout_seconds: 1800 }
+evaluation:
+  run_official: true
+  overlays: [citation_reliability]
+  grader_versions_locked: true
+  judge_profile: configs/judges/openai-compatible.example.yaml
+  # Replace with a bridge that implements the contract documented in configs/graders.
+  official_grader_command: [/absolute/path/to/deepresearcheval-official-bridge]
+artifacts: { root: artifacts/runs, retain_raw_html: true, retain_screenshots: true }
+state: { database: .trueeval/state.db }

@@ -1,0 +1,36 @@
+schema_version: trueeval.run_manifest.v0.1
+run_id: null
+name: offline-fixture-smoke
+benchmark:
+  id: fixture-research
+  version: fixture-v0.1
+  root: tests/fixtures/benchmark
+  split: smoke
+  task_selector:
+    ids: []
+    limit: 2
+    seed: 20260819
+sut:
+  id: fixture.fake.research
+  adapter: fake
+  options: {}
+execution:
+  worker: fake
+  concurrency: 1
+  max_attempts: 1
+  headless: false
+  keep_worker_open: true
+  new_session_per_task: true
+  timeout_seconds: 30
+evaluation:
+  run_official: false
+  overlays: []
+  grader_versions_locked: true
+  judge_profile: null
+  official_grader_command: null
+artifacts:
+  root: artifacts/runs
+  retain_raw_html: true
+  retain_screenshots: true
+state:
+  database: .trueeval/state.db

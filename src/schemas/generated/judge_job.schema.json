@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.judge_job.v0.1"
+    },
+    "judge_job_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grader_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grader_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "claim_extraction",
+        "claim_citation_mapping",
+        "citation_entailment",
+        "long_form_quality",
+        "source_classification",
+        "adjudication",
+        "short_fact_accuracy",
+        "fixture_quality"
+      ]
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uri": {
+            "type": "string",
+            "minLength": 1
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "artifact_id",
+          "kind",
+          "uri",
+          "media_type",
+          "sha256",
+          "size_bytes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "allowed_input_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "judge_config": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "prompt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "output_schema": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "model_version",
+        "temperature",
+        "seed",
+        "max_output_tokens",
+        "prompt_id",
+        "prompt_version",
+        "prompt_sha256",
+        "output_schema"
+      ],
+      "additionalProperties": false
+    },
+    "cache_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cache_source_job_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "judge_job_id",
+    "run_id",
+    "case_id",
+    "attempt_id",
+    "grader_id",
+    "grader_version",
+    "purpose",
+    "input_refs",
+    "allowed_input_fields",
+    "judge_config",
+    "cache_key",
+    "cache_source_job_id",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

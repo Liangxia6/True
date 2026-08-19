@@ -1,0 +1,286 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.run_manifest.v0.1"
+    },
+    "run_id": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "benchmark": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_selector": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "limit": {
+              "default": null,
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "seed": {
+              "default": 20260819,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "ids",
+            "limit",
+            "seed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "root",
+        "split",
+        "task_selector"
+      ],
+      "additionalProperties": false
+    },
+    "sut": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adapter": {
+          "type": "string",
+          "enum": [
+            "fake",
+            "doubao_web",
+            "process",
+            "http_api"
+          ]
+        },
+        "options": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "id",
+        "adapter",
+        "options"
+      ],
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "worker": {
+          "type": "string",
+          "enum": [
+            "fake",
+            "browser",
+            "process"
+          ]
+        },
+        "concurrency": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "max_attempts": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "headless": {
+          "default": false,
+          "type": "boolean"
+        },
+        "keep_worker_open": {
+          "default": true,
+          "type": "boolean"
+        },
+        "new_session_per_task": {
+          "type": "boolean",
+          "const": true
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "worker",
+        "concurrency",
+        "max_attempts",
+        "headless",
+        "keep_worker_open",
+        "new_session_per_task",
+        "timeout_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "run_official": {
+          "default": true,
+          "type": "boolean"
+        },
+        "overlays": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "const": "citation_reliability"
+          }
+        },
+        "grader_versions_locked": {
+          "default": true,
+          "type": "boolean"
+        },
+        "judge_profile": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "official_grader_command": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "run_official",
+        "overlays",
+        "grader_versions_locked",
+        "judge_profile",
+        "official_grader_command"
+      ],
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "default": "artifacts/runs",
+          "type": "string",
+          "minLength": 1
+        },
+        "retain_raw_html": {
+          "default": true,
+          "type": "boolean"
+        },
+        "retain_screenshots": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "root",
+        "retain_raw_html",
+        "retain_screenshots"
+      ],
+      "additionalProperties": false
+    },
+    "state": {
+      "default": {
+        "database": ".trueeval/state.db"
+      },
+      "type": "object",
+      "properties": {
+        "database": {
+          "default": ".trueeval/state.db",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "database"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "run_id",
+    "name",
+    "benchmark",
+    "sut",
+    "execution",
+    "evaluation",
+    "artifacts",
+    "state"
+  ],
+  "additionalProperties": false
+}

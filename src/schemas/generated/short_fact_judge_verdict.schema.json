@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.short_fact_judge_verdict.v0.1"
+    },
+    "extracted_answer": {
+      "type": "string"
+    },
+    "conclusion": {
+      "type": "string",
+      "enum": [
+        "correct",
+        "incorrect"
+      ]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "extracted_answer",
+    "conclusion",
+    "rationale",
+    "confidence"
+  ],
+  "additionalProperties": false
+}

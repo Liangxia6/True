@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.deepresearch_official_verdict.v0.1"
+    },
+    "upstream_commit": {
+      "type": "string",
+      "minLength": 7
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "quality_dimensions": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10
+      }
+    },
+    "fact_ratio": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "right_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "wrong_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "unknown_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "raw": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "schema_version",
+    "upstream_commit",
+    "quality_score",
+    "quality_dimensions",
+    "fact_ratio",
+    "right_count",
+    "wrong_count",
+    "unknown_count",
+    "raw"
+  ],
+  "additionalProperties": false
+}

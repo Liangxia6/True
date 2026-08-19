@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "trueeval.research_gold.v0.1"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "answer_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reference_answer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "acceptable_answers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unacceptable_answers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {}
+    },
+    "temporal_scope": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "official_grader_payload": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "provenance": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "schema_version",
+    "task_id",
+    "answer_type",
+    "reference_answer",
+    "acceptable_answers",
+    "unacceptable_answers",
+    "claims",
+    "temporal_scope",
+    "official_grader_payload",
+    "provenance"
+  ],
+  "additionalProperties": {}
+}
