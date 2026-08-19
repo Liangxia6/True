@@ -1,0 +1,41 @@
+schema_version: trueeval.research_benchmark.v0.1
+benchmark_id: cited-not-verified
+name: Cited but Not Verified
+benchmark_version: arxiv-2605.06635
+domain: research
+task_family: report_research
+track: citation_support
+formal_cn_leaderboard: false
+notes: >-
+  Onweller et al. 2026 evaluation framework, not a new question set. Queries
+  were drawn from DeepResearch Bench and BrowseComp; those IDs were not
+  released. Official scores are Link Works, Relevant Content, and Fact Check
+  and must stay separate. Fact Check is axis 1 (source vs generated text).
+upstream:
+  repo_url: https://arxiv.org/abs/2605.06635
+  commit_sha: arxiv-2605.06635
+  dataset_path: none (framework only)
+  evaluator_path: trueeval/cited_not_verified/
+  license: arXiv preprint; no released pair-level dataset
+  homepage: https://arxiv.org/abs/2605.06635
+splits:
+- name: framework
+  public_questions: false
+  public_gold: false
+  task_count: 0
+  notes: Apply adapters to any Markdown report with inline citations.
+default_execution:
+  mode: submission
+  timeout_seconds: 1800
+  max_attempts: 1
+  internet_required: true
+  allowed_tools:
+  - web_search
+  - browser
+  output_contract: research_answer.v0.1
+official_metrics:
+- official.link_works
+- official.relevant_content
+- official.fact_check
+trueeval_metrics:
+- trueeval.citation_correctness

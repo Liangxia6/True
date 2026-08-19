@@ -1,0 +1,78 @@
+schema_version: trueeval.research_rubric.v0.1
+rubric_id: cited-not-verified.default.v1
+benchmark_id: cited-not-verified
+gates:
+- metric_id: trueeval.execution_success
+  condition: status == completed
+  on_fail: exclude_as_system_failure
+metrics:
+- metric_id: official.fact_check
+  namespace: official
+  role: score
+  method: upstream_executable
+  adapter: adapters/official_eval.py
+  judge_config:
+    prompt_id: FACTUAL_SUPPORT
+    paper: Onweller et al. arXiv:2605.06635 §3.3.3; prompt text Leung et al. Appendix A
+    truncate_chars: 5000
+    pass_threshold: 0.5
+  inputs:
+  - prediction.final_answer
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 1.0
+  missing_policy: not_observable
+  notes: Axis 1. Source content supports the generated sentence. Do not fuse with the other two official metrics.
+- metric_id: official.relevant_content
+  namespace: official
+  role: diagnostic
+  method: upstream_executable
+  adapter: adapters/official_eval.py
+  judge_config:
+    prompt_id: SOURCE_RELEVANCE
+    paper: Onweller et al. arXiv:2605.06635 §3.3.2
+  inputs:
+  - prediction.final_answer
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+  notes: Cited page vs generated sentence topic, not vs the user query.
+- metric_id: official.link_works
+  namespace: official
+  role: diagnostic
+  method: http_fetch
+  adapter: adapters/official_eval.py
+  inputs:
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+- metric_id: trueeval.citation_correctness
+  namespace: trueeval
+  role: diagnostic
+  method: claim_citation_entailment
+  inputs:
+  - prediction.claims
+  - prediction.citations
+  range:
+  - 0.0
+  - 1.0
+  weight: 0.0
+  missing_policy: not_observable
+aggregation:
+  official_primary: official.fact_check
+  trueeval_composite: null
+  leaderboard_metric: official.fact_check
+  leaderboard_policy: report the three official rates as separate columns
+  system_failures: report_separately
+  confidence_interval:
+    method: bootstrap
+    samples: 10000
+    confidence: 0.95

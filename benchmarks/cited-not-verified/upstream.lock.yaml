@@ -1,0 +1,20 @@
+schema_version: trueeval.upstream_lock.v0.1
+benchmark_id: cited-not-verified
+extracted_at: '2026-08-18T09:30:00Z'
+extraction_version: extractor.cited-not-verified.v0.1
+upstream:
+  repo_url: https://arxiv.org/abs/2605.06635
+  commit_sha: arxiv-2605.06635
+  license: arXiv preprint; no released pair-level dataset
+  paper_title: Cited but Not Verified
+  authors: Hailey Onweller, Elias Lumer, Austin Huber, Pia Ramchandani, Vamse Kumar Subbiah, Corey Feld
+task_count: 0
+gold_policy: >-
+  This paper released a framework, not a pair-level gold file. Queries were
+  drawn from DeepResearch Bench and BrowseComp without a published ID list.
+  Implementation lives in trueeval/cited_not_verified/.
+framework:
+  parser: trueeval/cited_not_verified/parser.py
+  link_works: trueeval/cited_not_verified/fetch.py
+  llm_dims: trueeval/cited_not_verified/judge.py
+  runner: trueeval/cited_not_verified/pipeline.py
