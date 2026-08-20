@@ -1,0 +1,11 @@
+schema_version: trueeval.sut_config.v0.1
+sut_id: zhipu-qingyan
+provider: zhipu
+product: zhipu-qingyan
+model: glm-4-plus
+endpoint_family: zhipu_chat
+base_url: https://open.bigmodel.cn/api/paas/v4
+chat_path: /chat/completions
+auth_env: ZHIPU_API_KEY
+timeout_seconds: 180
+search_engine: search_pro

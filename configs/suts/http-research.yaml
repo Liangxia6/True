@@ -1,0 +1,15 @@
+schema_version: trueeval.sut_config.v0.1
+sut_id: http-research
+provider: generic
+product: research-api
+model: pinned-model-id
+endpoint_family: http_json
+channel: API_ASYNC
+submit_path: /v1/research/jobs
+poll_path: /v1/research/jobs/{job_id}
+collect_path: /v1/research/jobs/{job_id}/result
+lookup_path: /v1/research/jobs?idempotency_key={idempotency_key}
+idempotency_header: Idempotency-Key
+auth_env: TRUEEVAL_SUT_API_KEY
+provider_idempotency: true
+submission_lookup: true

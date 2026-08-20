@@ -1,19 +1,40 @@
 # TrueEval
 
-TrueEval 是面向多领域 Agent / API 的统一评测框架。本仓库当前先实现 Research MVP，以及豆包网页版的浏览器自动化适配器。
+TrueEval 是面向多领域 Agent / API 的统一评测框架。本仓库当前先实现 Research MVP：Python 评测工作流，以及豆包网页版的浏览器自动化适配器。
 
 ## 仓库结构
 
 ```text
 benchmarks/  Research 测试集、上游锁定文件、官方评分适配器
+configs/     SUT 等版本控制内配置（不含 Secret）
 docs/        架构、产品适配器和使用文档
+examples/    示例 Run 配置
 scripts/     Benchmark 入库与本地解密脚本
-src/         TrueEval 执行代码和豆包网页适配器
-tests/       TypeScript 单元测试
+src/         TrueEval 执行代码（Python 工作流 + 豆包网页适配器）
+tests/       Python 与 TypeScript 测试
 artifacts/   本地运行产物，不进入 Git
 ```
 
 当前已接入 BrowseComp-ZH、xbench-DeepSearch 和 DeepResearchEval，数据状态与使用限制见 [Benchmark 目录说明](benchmarks/README.md)。
+
+## Python 评测工作流（R0–R2）
+
+确定性编排，不使用 LangGraph。Generation 与 Evaluation 分离，替换 Grader 时不重新调用被测产品。
+
+```text
+Pydantic Schema + asyncio Runner + SQLite State Store
++ append-only Event Store + immutable Artifact Store
++ Benchmark / SUT / Grader adapters
+```
+
+```bash
+pip install -e ".[dev]"
+trueeval run plan --config examples/run-fake.yaml
+trueeval run start --config examples/run-fake.yaml --yes
+pytest
+```
+
+密钥只从环境变量注入（`TRUEEVAL_SUT_API_KEY`、`TRUEEVAL_JUDGE_API_KEY`、`TRUEEVAL_ARTIFACT_KEY`），不得写入 YAML。
 
 ## 豆包自动化 MVP
 

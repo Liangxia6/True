@@ -1,0 +1,26 @@
+schema_version: trueeval.run_config.v0.1
+benchmark:
+  id: xbench-deepsearch
+  split: "2505"
+  task_ids:
+    - xbench-deepsearch.2505.000001
+sut:
+  id: kimi-research
+  model: kimi-k2.6
+execution:
+  repeats: 1
+  submit_concurrency: 1
+  poll_interval_seconds: 2
+  task_timeout_seconds: 600
+  allow_regeneration: false
+  estimated_cost_usd_per_task: 0.1
+grading:
+  graders:
+    - format-completeness
+    - official-accuracy
+budget:
+  max_cost_usd: 2
+gate:
+  data_region: local
+  authorized_channel: api
+  operator: local

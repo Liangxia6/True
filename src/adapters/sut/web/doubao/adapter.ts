@@ -57,21 +57,82 @@ export class DoubaoWebAdapter {
   async ensureLogin(): Promise<void> {
     // 豆包的登录按钮可能晚于输入框渲染，先给页面一个短暂稳定窗口。
     await this.page.waitForTimeout(1_500);
-    if (!(await this.loginButtonVisible())) return;
+    if (await this.sessionLooksLoggedIn()) {
+      await this.settleAuthenticatedSession();
+      return;
+    }
     if (this.options.allowAnonymous) {
       await this.event("ANONYMOUS_MODE_ALLOWED");
       return;
     }
     await this.waitForManualLogin("页面检测到未登录");
+    await this.settleAuthenticatedSession();
+  }
+
+  async ensurePersonalChat(): Promise<void> {
+    const before = await this.readMainText();
+    const onWork =
+      before.includes("今天有什么工作要处理") ||
+      (before.includes("豆包 工作") && before.includes("新工作任务"));
+    if (!onWork) {
+      await this.event("PERSONAL_CHAT_ALREADY");
+      return;
+    }
+
+    await this.screenshot("00a-workspace.png");
+    await this.event("WORKSPACE_DETECTED", { action: "switch_to_dialog" });
+    const switcher = await this.firstEnabledVisible([
+      this.page.getByRole("button", { name: "对话", exact: true }),
+      this.page.getByRole("tab", { name: "对话", exact: true }),
+      this.page.getByRole("button", { name: "主对话", exact: true }),
+      this.page.getByText("主对话", { exact: true }),
+      this.page.getByText("对话", { exact: true }),
+    ]);
+    if (switcher) {
+      try {
+        await switcher.click({ timeout: 5_000 });
+        await this.page.waitForTimeout(1_200);
+      } catch {
+        await this.event("SWITCH_CLICK_FAILED");
+      }
+    }
+
+    const deadline = Date.now() + Math.min(this.options.loginTimeoutSeconds, 180) * 1000;
+    let waited = false;
+    while (Date.now() < deadline) {
+      if (await this.personalChatReady()) {
+        await this.screenshot("00b-personal-chat.png");
+        await this.event("PERSONAL_CHAT_READY", { still_work: false });
+        return;
+      }
+      if (!waited) {
+        await this.event("PERSONAL_CHAT_WAIT", {
+          hint: "请在弹出的 Edge 窗口点左侧“主对话”，或切到带“深入研究”的普通豆包。",
+        });
+        waited = true;
+      }
+      await this.page.waitForTimeout(2_000);
+    }
+
+    await this.screenshot("00b-personal-chat.png");
+    throw new DoubaoAutomationError(
+      "UI_CHANGED",
+      "仍停留在“豆包工作”，未能切回带“深入研究”的普通对话。",
+    );
   }
 
   async startCleanConversation(): Promise<void> {
-    const candidates = [
-      this.page.getByRole("button", { name: "新对话", exact: true }),
-      this.page.getByText("新对话", { exact: true }),
-      this.page.getByRole("button", { name: "新工作任务", exact: true }),
-      this.page.getByText("新工作任务", { exact: true }),
-    ];
+    const candidates = this.options.researchMode
+      ? [
+          this.page.getByRole("button", { name: "新对话", exact: true }),
+          this.page.getByText("新对话", { exact: true }),
+        ]
+      : [
+          this.page.getByRole("button", { name: "新对话", exact: true }),
+          this.page.getByText("新对话", { exact: true }),
+          this.page.getByRole("button", { name: "新工作任务", exact: true }),
+          this.page.getByText("新工作任务", { exact: true }),
+        ];
     const locator = await this.resolveUniqueVisible(candidates, "新对话", false);
     if (locator) {
       await locator.click();
@@ -136,43 +197,43 @@ export class DoubaoWebAdapter {
   }
 
   async submitPrompt(): Promise<void> {
-    const textbox = await this.textbox();
-    await textbox.fill(this.options.prompt);
-    const actual = normalizeText(
-      await textbox.evaluate((element) => {
-        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-          return element.value;
-        }
-        return element.textContent ?? "";
-      }),
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const urlBefore = this.page.url();
+      const sentByButton = await this.fillAndSend();
+      await this.page.waitForTimeout(1_500);
+      await this.recoverAfterNavigation();
+      if (!(await this.sessionLooksLoggedIn())) {
+        await this.event("SESSION_LOST_AFTER_SUBMIT", {
+          attempt,
+          url: this.page.url(),
+        });
+        await this.waitForManualLogin("提交后登录态丢失，请在同一窗口重新登录");
+        await this.settleAuthenticatedSession();
+        await this.startCleanConversation();
+        await this.selectResearchMode();
+        continue;
+      }
+      const submitted =
+        this.conversationStarted(urlBefore) || (await this.waitForPromptEcho(30_000));
+      if (!submitted) {
+        throw new DoubaoAutomationError(
+          "SUBMISSION_UNCONFIRMED",
+          "已触发发送，但页面未确认提示词已提交；为避免重复任务，脚本不会自动重发。",
+        );
+      }
+      await this.screenshot("03-submitted.png");
+      await this.event("SUBMITTED", {
+        prompt_sha256: this.promptHash,
+        submission_method: sentByButton ? "send_button" : "enter_key",
+        url: this.page.url(),
+        attempt,
+      });
+      return;
+    }
+    throw new DoubaoAutomationError(
+      "LOGIN_REQUIRED",
+      "提交时豆包两次清掉登录态。请只在脚本弹出的窗口登录，登录完成后等侧栏出现“云盘”再继续。",
     );
-    const expected = normalizeText(this.options.prompt);
-    if (actual !== expected) {
-      throw new DoubaoAutomationError(
-        "PROMPT_INPUT_MISMATCH",
-        "输入框内容与原始提示词不一致，已停止提交。",
-      );
-    }
-    this.promptHash = createHash("sha256").update(expected).digest("hex");
-    await this.event("PROMPT_READY", { prompt_sha256: this.promptHash });
-    await this.screenshot("02-prompt-ready.png");
-
-    const sentByButton = await this.tryClickSendButton();
-    if (!sentByButton) await textbox.press("Enter");
-
-    const submitted = await this.waitForPromptEcho(20_000);
-    if (!submitted) {
-      throw new DoubaoAutomationError(
-        "SUBMISSION_UNCONFIRMED",
-        "已触发发送，但页面未确认提示词已提交；为避免重复任务，脚本不会自动重发。",
-      );
-    }
-    await this.screenshot("03-submitted.png");
-    await this.event("SUBMITTED", {
-      prompt_sha256: this.promptHash,
-      submission_method: sentByButton ? "send_button" : "enter_key",
-      url: this.page.url(),
-    });
   }
 
   async waitForCompletion(): Promise<CollectedOutput> {
@@ -187,15 +248,22 @@ export class DoubaoWebAdapter {
     });
 
     while (Date.now() < deadline) {
+      try {
+        await this.recoverAfterNavigation();
+      } catch (error) {
+        if (!this.isDestroyedError(error)) throw error;
+        await this.page.waitForTimeout(1_000);
+        continue;
+      }
       this.assertAllowedHost();
       const mainText = await this.readMainText();
       const promptStillVisible = await this.promptInMessageArea();
       missingPromptPolls = promptStillVisible ? 0 : missingPromptPolls + 1;
       if (missingPromptPolls >= 2) {
-        if (await this.loginButtonVisible()) {
+        if (!(await this.sessionLooksLoggedIn())) {
           throw new DoubaoAutomationError(
             "LOGIN_REQUIRED",
-            "豆包在提交后终止了未登录会话；请使用非 headless 模式登录后重试。",
+            "豆包在提交后终止了未登录会话；请只在脚本弹出的窗口重新登录后重试。",
           );
         }
         throw new DoubaoAutomationError(
@@ -287,6 +355,83 @@ export class DoubaoWebAdapter {
     return (await prompt.count()) === 1 && (await prompt.isVisible());
   }
 
+  private async sessionLooksLoggedIn(): Promise<boolean> {
+    if (this.page.url().includes("from_logout")) return false;
+    if (await this.loginButtonVisible()) return false;
+    if (await this.researchLoginPromptVisible()) return false;
+    const cloud = await this.page
+      .getByText("云盘", { exact: true })
+      .first()
+      .isVisible()
+      .catch(() => false);
+    const skills = await this.page
+      .getByText("技能·连接器·伙伴", { exact: true })
+      .first()
+      .isVisible()
+      .catch(() => false);
+    return Boolean(cloud || skills);
+  }
+
+  private async settleAuthenticatedSession(): Promise<void> {
+    await this.recoverAfterNavigation();
+    if (!(await this.sessionLooksLoggedIn())) {
+      throw new DoubaoAutomationError(
+        "LOGIN_REQUIRED",
+        "登录态未稳定。请只在脚本弹出的窗口登录，并确认侧栏出现“云盘”。",
+      );
+    }
+    await this.page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
+    await this.page.waitForTimeout(1_500);
+    await this.recoverAfterNavigation();
+    if (!(await this.sessionLooksLoggedIn())) {
+      throw new DoubaoAutomationError(
+        "LOGIN_REQUIRED",
+        "刷新后登录态未保持。请只在脚本弹出的窗口登录，并确认侧栏出现“云盘”。",
+      );
+    }
+    await this.waitForTextbox(30_000);
+    await this.screenshot("00c-session.png");
+    await this.event("SESSION_SETTLED", { url: this.page.url() });
+  }
+
+  private async recoverAfterNavigation(): Promise<void> {
+    try {
+      await this.page.waitForLoadState("domcontentloaded", { timeout: 15_000 });
+    } catch {
+      // 页面可能仍在跳转
+    }
+    this.assertAllowedHost();
+    if (!this.page.url().includes("from_logout")) return;
+    await this.event("LOGOUT_REDIRECT", { url: this.page.url() });
+    await this.page.goto(ENTRY_URL, {
+      waitUntil: "domcontentloaded",
+      timeout: 60_000,
+    });
+  }
+
+  private isDestroyedError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+      message.includes("Execution context was destroyed") ||
+      message.includes("Target closed") ||
+      message.includes("Target page, context or browser has been closed")
+    );
+  }
+
+  private async withFreshPage<T>(fn: () => Promise<T>): Promise<T> {
+    let last: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await fn();
+      } catch (error) {
+        last = error;
+        if (!this.isDestroyedError(error) || attempt === 2) throw error;
+        await this.recoverAfterNavigation();
+      }
+    }
+    throw last;
+  }
+
   private async waitForManualLogin(reason: string): Promise<void> {
     if (this.options.headless) {
       throw new DoubaoAutomationError(
@@ -300,17 +445,16 @@ export class DoubaoWebAdapter {
       timeout_seconds: this.options.loginTimeoutSeconds,
     });
     process.stdout.write(
-      `\n${reason}。请在已打开的豆包浏览器窗口中完成登录；脚本将等待 ${this.options.loginTimeoutSeconds} 秒。\n`,
+      `\n${reason}。请在已打开的豆包浏览器窗口中完成登录，等到左侧出现“云盘”后再等待脚本继续；脚本将等待 ${this.options.loginTimeoutSeconds} 秒。\n`,
     );
 
     const deadline = Date.now() + this.options.loginTimeoutSeconds * 1000;
     let stableAuthenticatedPolls = 0;
     while (Date.now() < deadline) {
       await this.page.waitForTimeout(2_000);
-      const authenticated =
-        !(await this.loginButtonVisible()) && !(await this.researchLoginPromptVisible());
+      const authenticated = await this.sessionLooksLoggedIn();
       stableAuthenticatedPolls = authenticated ? stableAuthenticatedPolls + 1 : 0;
-      if (stableAuthenticatedPolls >= 2) {
+      if (stableAuthenticatedPolls >= 4) {
         await this.event("LOGIN_CONFIRMED");
         await this.waitForTextbox(30_000);
         return;
@@ -318,24 +462,121 @@ export class DoubaoWebAdapter {
     }
     throw new DoubaoAutomationError(
       "LOGIN_REQUIRED",
-      `等待登录超时（${this.options.loginTimeoutSeconds} 秒）。`,
+      `等待登录超时（${this.options.loginTimeoutSeconds} 秒）。侧栏需出现“云盘”才算登录完成。`,
+    );
+  }
+
+  private async fillAndSend(): Promise<boolean> {
+    const textbox = await this.textbox();
+    await textbox.fill(this.options.prompt);
+    const actual = await this.composerValue(textbox);
+    const expected = normalizeText(this.options.prompt);
+    if (actual !== expected) {
+      throw new DoubaoAutomationError(
+        "PROMPT_INPUT_MISMATCH",
+        "输入框内容与原始提示词不一致，已停止提交。",
+      );
+    }
+    this.promptHash = createHash("sha256").update(expected).digest("hex");
+    await this.event("PROMPT_READY", { prompt_sha256: this.promptHash });
+    await this.screenshot("02-prompt-ready.png");
+
+    const sentByButton = await this.tryClickSendButton();
+    if (!sentByButton) await textbox.press("Enter");
+    return sentByButton;
+  }
+
+  private async composerValue(locator: Locator): Promise<string> {
+    return normalizeText(
+      await locator.evaluate((element) => {
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+          return element.value;
+        }
+        return element.textContent ?? "";
+      }),
     );
   }
 
   private async textbox(): Promise<Locator> {
-    const locator = await this.resolveUniqueVisible(
-      [this.page.getByRole("textbox")],
-      "消息输入框",
-      true,
-    );
-    if (!locator) {
-      throw new DoubaoAutomationError("UI_CHANGED", "未找到唯一可见的消息输入框。");
+    const locators = [
+      ...(await this.page.getByRole("textbox").all()),
+      ...(await this.page.locator("textarea").all()),
+      ...(await this.page.locator('[contenteditable="true"]').all()),
+    ];
+    const visible: Locator[] = [];
+    for (const match of locators) {
+      try {
+        if (await match.isVisible()) visible.push(match);
+      } catch {
+        // 节点可能已从 DOM 卸下
+      }
     }
-    return locator;
+
+    const expected = normalizeText(this.options.prompt);
+    if (expected) {
+      for (const match of visible) {
+        try {
+          const value = await this.composerValue(match);
+          if (value.includes(expected.slice(0, 24))) return match;
+        } catch {
+          // 忽略失效节点
+        }
+      }
+    }
+
+    const byPlaceholder = await this.firstEnabledVisible([
+      this.page.getByRole("textbox", { name: /发消息|输入主题|输入问题|输入主题和报告要求/ }),
+      this.page.getByPlaceholder(/发消息|输入主题|输入问题|输入主题和报告要求/),
+    ]);
+    if (byPlaceholder) return byPlaceholder;
+
+    if (visible.length === 1) return visible[0]!;
+
+    let best: Locator | null = null;
+    let bestY = -1;
+    for (const match of visible) {
+      const box = await match.boundingBox().catch(() => null);
+      if (!box || box.width < 200) continue;
+      if (box.y > bestY) {
+        bestY = box.y;
+        best = match;
+      }
+    }
+    if (best) return best;
+    throw new DoubaoAutomationError("UI_CHANGED", "未找到可见的消息输入框。");
   }
 
   private async waitForTextbox(timeoutMs: number): Promise<void> {
     await this.page.getByRole("textbox").waitFor({ state: "visible", timeout: timeoutMs });
+  }
+
+  private async personalChatReady(): Promise<boolean> {
+    const mainText = await this.readMainText();
+    const hasResearch = await this.firstEnabledVisible([
+      this.page.getByRole("button", { name: "深入研究", exact: true }),
+      this.page.getByText("深入研究", { exact: true }),
+    ]);
+    if (hasResearch) return true;
+    return (
+      mainText.includes("新对话") &&
+      !mainText.includes("今天有什么工作要处理") &&
+      !mainText.includes("豆包 工作")
+    );
+  }
+
+  private async firstEnabledVisible(candidates: Locator[]): Promise<Locator | null> {
+    for (const candidate of candidates) {
+      const matches = await candidate.all();
+      const usable: Locator[] = [];
+      for (const match of matches) {
+        if (!(await match.isVisible())) continue;
+        if (await match.isDisabled()) continue;
+        if ((await match.getAttribute("aria-disabled")) === "true") continue;
+        usable.push(match);
+      }
+      if (usable.length === 1) return usable[0] ?? null;
+    }
+    return null;
   }
 
   private async resolveUniqueVisible(
@@ -398,8 +639,12 @@ export class DoubaoWebAdapter {
     // 该几何兜底不依赖混淆 class，也不会误点左侧的附件按钮。
     const deadline = Date.now() + 5_000;
     while (Date.now() < deadline) {
-      const textbox = await this.textbox();
-      const textboxBox = await textbox.boundingBox();
+      let textboxBox: { x: number; y: number; width: number; height: number } | null = null;
+      try {
+        textboxBox = await (await this.textbox()).boundingBox();
+      } catch {
+        textboxBox = { x: 400, y: 800, width: 600, height: 80 };
+      }
       if (!textboxBox) return false;
 
       const matches: Locator[] = [];
@@ -437,20 +682,36 @@ export class DoubaoWebAdapter {
     return false;
   }
 
+  private conversationStarted(urlBefore: string): boolean {
+    const before = new URL(urlBefore);
+    const after = new URL(this.page.url());
+    if (after.href.includes("from_logout")) return false;
+    const afterPath = after.pathname.replace(/\/+$/, "") || "/";
+    if (afterPath.startsWith("/chat/") && afterPath !== "/chat") return true;
+    return after.pathname !== before.pathname;
+  }
+
   private async waitForPromptEcho(timeoutMs: number): Promise<boolean> {
     const deadline = Date.now() + timeoutMs;
+    let emptyComposerPolls = 0;
     while (Date.now() < deadline) {
-      const textbox = await this.textbox();
-      const textboxValue = normalizeText(
-        await textbox.evaluate((element) => {
-          if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-            return element.value;
-          }
-          return element.textContent ?? "";
-        }),
-      );
-      const promptInMessageArea = await this.promptInMessageArea();
-      if (!textboxValue && promptInMessageArea) return true;
+      try {
+        const promptInMessageArea = await this.promptInMessageArea();
+        const textboxValue = await this.composerValue(await this.textbox());
+        if (!textboxValue && promptInMessageArea) return true;
+        if (!textboxValue && (await this.sessionLooksLoggedIn())) {
+          emptyComposerPolls += 1;
+          if (emptyComposerPolls >= 8) return true;
+        } else {
+          emptyComposerPolls = 0;
+        }
+      } catch (error) {
+        if (this.isDestroyedError(error)) {
+          await this.recoverAfterNavigation();
+        } else if (await this.promptInMessageArea().catch(() => false)) {
+          return true;
+        }
+      }
       await this.page.waitForTimeout(500);
     }
     return false;
@@ -458,24 +719,28 @@ export class DoubaoWebAdapter {
 
   private async promptInMessageArea(): Promise<boolean> {
     const expected = normalizeText(this.options.prompt);
-    return this.page.evaluate((prompt) => {
-      const root = document.querySelector("main") ?? document.body;
-      const clone = root.cloneNode(true) as HTMLElement;
-      for (const input of clone.querySelectorAll(
-        '[role="textbox"], textarea, input, [contenteditable="true"]',
-      )) {
-        input.remove();
-      }
-      return (clone.textContent ?? "").replace(/\s+/g, " ").includes(
-        prompt.replace(/\s+/g, " "),
-      );
-    }, expected);
+    return this.withFreshPage(() =>
+      this.page.evaluate((prompt) => {
+        const root = document.querySelector("main") ?? document.body;
+        const clone = root.cloneNode(true) as HTMLElement;
+        for (const input of clone.querySelectorAll(
+          '[role="textbox"], textarea, input, [contenteditable="true"]',
+        )) {
+          input.remove();
+        }
+        return (clone.textContent ?? "").replace(/\s+/g, " ").includes(
+          prompt.replace(/\s+/g, " "),
+        );
+      }, expected),
+    );
   }
 
   private async readMainText(): Promise<string> {
-    const main = this.page.locator("main");
-    if ((await main.count()) === 1) return normalizeText(await main.innerText());
-    return normalizeText(await this.page.locator("body").innerText());
+    return this.withFreshPage(async () => {
+      const main = this.page.locator("main");
+      if ((await main.count()) === 1) return normalizeText(await main.innerText());
+      return normalizeText(await this.page.locator("body").innerText());
+    });
   }
 
   private async extractAnswer(mainText: string): Promise<string> {
@@ -489,7 +754,8 @@ export class DoubaoWebAdapter {
       "article",
       '[class*="message"]',
     ];
-    const candidates = await this.page.evaluate(
+    const candidates = await this.withFreshPage(() =>
+      this.page.evaluate(
       ({ selectors: candidateSelectors, promptText }) => {
         const seen = new Set<Element>();
         const rows: Array<{ text: string; links: number; order: number; specific: boolean }> = [];
@@ -514,6 +780,7 @@ export class DoubaoWebAdapter {
         return rows.slice(-100);
       },
       { selectors, promptText: prompt },
+    ),
     );
 
     const scored = candidates
@@ -542,10 +809,12 @@ export class DoubaoWebAdapter {
       const button = this.page.getByRole("button", { name, exact: true });
       if ((await button.count()) === 1 && (await button.isVisible())) return true;
     }
-    return this.page.evaluate(() =>
-      Boolean(
-        document.querySelector(
-          '[data-streaming="true"], [aria-busy="true"], [data-loading="true"], [data-state="loading"]',
+    return this.withFreshPage(() =>
+      this.page.evaluate(() =>
+        Boolean(
+          document.querySelector(
+            '[data-streaming="true"], [aria-busy="true"], [data-loading="true"], [data-state="loading"]',
+          ),
         ),
       ),
     );

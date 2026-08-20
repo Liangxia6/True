@@ -22,3 +22,18 @@ benchmarks/xbench-deepsearch/local/
 **/browsecomp-zh-decrypted.json
 **/*.pyc
 **/__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Runtime
+runs/
+.env
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+trueeval-dev-artifact-key
+

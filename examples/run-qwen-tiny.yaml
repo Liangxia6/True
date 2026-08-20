@@ -1,0 +1,24 @@
+schema_version: trueeval.run_config.v0.1
+benchmark:
+  id: tiny-research
+  split: pilot
+sut:
+  id: qwen-deep-research
+  model: qwen-deep-research
+execution:
+  repeats: 1
+  submit_concurrency: 1
+  poll_interval_seconds: 5
+  task_timeout_seconds: 900
+  allow_regeneration: false
+  estimated_cost_usd_per_task: 1.0
+grading:
+  graders:
+    - format-completeness
+    - exact-match
+budget:
+  max_cost_usd: 10
+gate:
+  data_region: local
+  authorized_channel: api
+  operator: local

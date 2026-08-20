@@ -15,7 +15,7 @@ upstream:
   repo_url: https://arxiv.org/abs/2605.06635
   commit_sha: arxiv-2605.06635
   dataset_path: none (framework only)
-  evaluator_path: trueeval/cited_not_verified/
+  evaluator_path: src/trueeval/cited_not_verified/
   license: arXiv preprint; no released pair-level dataset
   homepage: https://arxiv.org/abs/2605.06635
 splits:

@@ -1,0 +1,29 @@
+schema_version: trueeval.research_rubric.v0.1
+rubric_id: tiny-research.default.v1
+benchmark_id: tiny-research
+gates:
+  - metric_id: trueeval.execution_success
+    condition: status == completed
+    on_fail: exclude_as_system_failure
+metrics:
+  - metric_id: official.answer_accuracy
+    namespace: official
+    role: score
+    method: exact_match
+    inputs: [prediction.final_answer, gold.reference_answer]
+    range: [0.0, 1.0]
+    weight: 1.0
+    missing_policy: error
+  - metric_id: trueeval.format_completeness
+    namespace: trueeval
+    role: diagnostic
+    method: format_check
+    inputs: [prediction.final_answer]
+    range: [0.0, 1.0]
+    weight: 0.0
+    missing_policy: exclude
+aggregation:
+  official_primary: official.answer_accuracy
+  trueeval_composite: null
+  leaderboard_metric: official.answer_accuracy
+  system_failures: report_separately

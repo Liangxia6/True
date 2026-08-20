@@ -1,0 +1,27 @@
+schema_version: trueeval.run_config.v0.1
+benchmark:
+  id: deepresearcheval
+  split: v1
+  sample_limit: 3
+sut:
+  id: kimi-research
+  model: kimi-k2.6
+execution:
+  repeats: 1
+  submit_concurrency: 1
+  poll_interval_seconds: 2
+  task_timeout_seconds: 900
+  allow_regeneration: false
+  estimated_cost_usd_per_task: 0.3
+grading:
+  graders:
+    - format-completeness
+    - official-quality
+  judge_provider: deepseek
+  judge_model: deepseek-v4-pro
+budget:
+  max_cost_usd: 10
+gate:
+  data_region: local
+  authorized_channel: api
+  operator: local

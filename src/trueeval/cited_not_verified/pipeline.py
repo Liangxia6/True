@@ -26,13 +26,11 @@ def evaluate_report(
 ) -> AttributionDocument:
     doc = parse_markdown_report(markdown, query=query)
 
-    fetched = {}
     if fetch:
         for citation in doc.citations:
             result = fetch_url(citation.url)
             citation.link_works = result.link_works
             citation.url_content = result.url_content
-            fetched[citation.citation_id] = result
             if result.error:
                 doc.notes.append(f"fetch:{citation.citation_id}:{result.error}")
     else:

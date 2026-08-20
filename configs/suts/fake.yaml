@@ -1,0 +1,9 @@
+schema_version: trueeval.sut_config.v0.1
+id: fake-research
+provider: fake
+product: fake-research
+model: fake-model
+endpoint_family: in_process
+channel: API_SYNC
+provider_idempotency: true
+submission_lookup: true

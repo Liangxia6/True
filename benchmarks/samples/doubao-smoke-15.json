@@ -1,0 +1,45 @@
+{
+  "schema_version": "trueeval.task_sample.v0.1",
+  "sample_id": "doubao-smoke-15",
+  "created_at": "2026-08-19T06:56:24Z",
+  "seed": 20260819,
+  "per_benchmark": 5,
+  "groups": [
+    {
+      "benchmark_id": "browsecomp-zh",
+      "split": "test",
+      "population": 289,
+      "task_ids": [
+        "browsecomp-zh.test.000044",
+        "browsecomp-zh.test.000147",
+        "browsecomp-zh.test.000149",
+        "browsecomp-zh.test.000165",
+        "browsecomp-zh.test.000170"
+      ]
+    },
+    {
+      "benchmark_id": "xbench-deepsearch",
+      "split": "2505",
+      "population": 100,
+      "task_ids": [
+        "xbench-deepsearch.2505.000006",
+        "xbench-deepsearch.2505.000023",
+        "xbench-deepsearch.2505.000048",
+        "xbench-deepsearch.2505.000061",
+        "xbench-deepsearch.2505.000083"
+      ]
+    },
+    {
+      "benchmark_id": "deepresearcheval",
+      "split": "v1",
+      "population": 100,
+      "task_ids": [
+        "deepresearcheval.v1.000020",
+        "deepresearcheval.v1.000042",
+        "deepresearcheval.v1.000055",
+        "deepresearcheval.v1.000075",
+        "deepresearcheval.v1.000090"
+      ]
+    }
+  ]
+}

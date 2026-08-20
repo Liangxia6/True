@@ -1,0 +1,15 @@
+{
+  "schema_version": "trueeval.manual_import_package.v0.1",
+  "task_id": "tiny.pilot.000001",
+  "operator": "analyst-1",
+  "executed_at": "2026-08-19T00:00:00Z",
+  "sop_version": "sop.research.v0.1",
+  "report": "The capital of France is Paris. See https://example.com/paris",
+  "final_answer": "Paris",
+  "citations": [
+    {"citation_id": "src1", "url": "https://example.com/paris", "title": "Paris"}
+  ],
+  "evidence": [
+    {"path": "screenshots/paris.png", "kind": "screenshot", "sha256": "sha256:00"}
+  ]
+}

@@ -1,0 +1,11 @@
+schema_version: trueeval.sut_config.v0.1
+sut_id: qwen-deep-research
+provider: qwen
+product: qwen-deep-research
+model: qwen-deep-research
+endpoint_family: dashscope_generation
+base_url: https://dashscope.aliyuncs.com/api/v1
+generate_path: /services/aigc/text-generation/generation
+auth_env: DASHSCOPE_API_KEY
+timeout_seconds: 900
+enable_feedback: false

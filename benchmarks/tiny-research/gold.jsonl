@@ -1,0 +1,2 @@
+{"schema_version":"trueeval.research_gold.v0.1","task_id":"tiny.pilot.000001","answer_type":"short_text","reference_answer":"Paris","acceptable_answers":["paris"],"unacceptable_answers":[],"claims":[],"official_grader_payload":{}}
+{"schema_version":"trueeval.research_gold.v0.1","task_id":"tiny.pilot.000002","answer_type":"short_text","reference_answer":"4","acceptable_answers":["four"],"unacceptable_answers":[],"claims":[],"official_grader_payload":{}}

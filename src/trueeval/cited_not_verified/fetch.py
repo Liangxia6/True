@@ -1,9 +1,4 @@
-"""Link Works + source fetch (Onweller et al. §3.3.1).
-
-Binary 1 if the URL returns accessible content, else 0 (404/403/timeout/blocked).
-The paper used a JS-capable extractor; this default uses stdlib HTTP. Pages that
-only render in a browser may score 0, same class of failure as a blocked page.
-"""
+"""Link Works + source fetch (Onweller et al. §3.3.1)."""
 
 from __future__ import annotations
 
@@ -16,8 +11,6 @@ from trueeval.cited_not_verified.prompts import CONTENT_TRUNCATE_CHARS
 
 USER_AGENT = "TrueEval-cited-not-verified/0.1 (research citation check)"
 DEFAULT_TIMEOUT_S = 15
-RETRY_TIMES = 5
-RETRY_DELAY_S = 5.0
 
 
 @dataclass
@@ -47,5 +40,5 @@ def fetch_url(
             return FetchResult(url, 1, text[:truncate_chars], status, None)
     except urllib.error.HTTPError as exc:
         return FetchResult(url, 0, "", int(exc.code), f"http_{exc.code}")
-    except Exception as exc:  # noqa: BLE001 — paper treats all fetch failures as 0
+    except OSError as exc:
         return FetchResult(url, 0, "", None, type(exc).__name__)

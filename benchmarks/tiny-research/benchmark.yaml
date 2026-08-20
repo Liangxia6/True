@@ -1,0 +1,29 @@
+schema_version: trueeval.research_benchmark.v0.1
+benchmark_id: tiny-research
+name: Tiny Research Fixture
+benchmark_version: fixture-0.1
+domain: research
+task_family: factoid_research
+upstream:
+  repo_url: https://example.com/trueeval/tiny-research
+  commit_sha: "0000000000000000000000000000000000000001"
+  dataset_path: tasks.jsonl
+  evaluator_path: exact-match
+  license: MIT
+  homepage: https://example.com/trueeval/tiny-research
+splits:
+  - name: pilot
+    public_questions: true
+    public_gold: true
+    task_count: 2
+default_execution:
+  mode: submission
+  timeout_seconds: 60
+  max_attempts: 2
+  internet_required: false
+  allowed_tools: []
+  output_contract: research_answer.v0.1
+official_metrics:
+  - official.answer_accuracy
+trueeval_metrics:
+  - trueeval.format_completeness

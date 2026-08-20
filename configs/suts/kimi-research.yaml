@@ -1,0 +1,10 @@
+schema_version: trueeval.sut_config.v0.1
+sut_id: kimi-research
+provider: kimi
+product: kimi-research
+model: kimi-k2.6
+endpoint_family: moonshot_chat
+base_url: https://api.moonshot.ai/v1
+chat_path: /chat/completions
+auth_env: MOONSHOT_API_KEY
+timeout_seconds: 600

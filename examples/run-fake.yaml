@@ -1,0 +1,25 @@
+schema_version: trueeval.run_config.v0.1
+benchmark:
+  id: tiny-research
+  split: pilot
+sut:
+  id: fake-research
+  model: fake-model
+execution:
+  repeats: 2
+  submit_concurrency: 2
+  poll_interval_seconds: 0.01
+  task_timeout_seconds: 60
+  allow_regeneration: false
+  estimated_cost_usd_per_task: 0.01
+grading:
+  graders:
+    - format-completeness
+    - exact-match
+    - cited-not-verified
+budget:
+  max_cost_usd: 10
+gate:
+  data_region: local
+  authorized_channel: api
+  operator: local

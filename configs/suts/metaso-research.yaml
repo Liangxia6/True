@@ -1,0 +1,11 @@
+schema_version: trueeval.sut_config.v0.1
+sut_id: metaso-research
+provider: metaso
+product: metaso-research
+model: research
+endpoint_family: metaso_chat
+base_url: https://metaso.cn/api/v1
+chat_path: /chat/completions
+auth_env: METASO_API_KEY
+timeout_seconds: 180
+scope: webpage

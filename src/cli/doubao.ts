@@ -183,6 +183,7 @@ async function main(): Promise<void> {
     adapter = new DoubaoWebAdapter(page, options, resultDir);
     await adapter.open();
     await adapter.ensureLogin();
+    await adapter.ensurePersonalChat();
     await adapter.startCleanConversation();
     await adapter.selectResearchMode();
     const output = options.probeOnly

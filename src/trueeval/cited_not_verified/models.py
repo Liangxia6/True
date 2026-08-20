@@ -62,6 +62,7 @@ class AttributionDocument:
 
     def aggregate(self) -> dict[str, Any]:
         evals = self.evals
+
         def _rate(key: str) -> float | None:
             vals = [getattr(e, key) for e in evals if getattr(e, key) is not None]
             if not vals:
